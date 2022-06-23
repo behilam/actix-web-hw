@@ -1,4 +1,4 @@
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder, guard};
 use std::sync::Mutex;
 
 // This struct represents state
@@ -59,7 +59,16 @@ async fn main() -> std::io::Result<()> {
                     }))
             )
             .service(hello)
-            .service(echo)
+            .service(
+                web::scope("/")
+                    .guard(guard::Header("Host", "www.rust-lang.org"))
+                    .route("", web::to(|| async { HttpResponse::Ok().body("www") }))
+            )
+            .service(
+                web::scope("/")
+                    .guard(guard::Header("Host", "users.rust-lang.org"))
+                    .route("", web::to(|| async { HttpResponse::Ok().body("user") }))
+            )
             .route("/hey", web::get().to(manual_hello))
     })
     .bind(("127.0.0.1", 8080))?
