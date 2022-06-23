@@ -32,8 +32,16 @@ async fn index(name: web::Data<AppState>, counter: web::Data<AppStateWithCounter
     format!("Hi {app_name}!\n\tRequest number: {counter}") // <- response with app_name
 }
 
+#[get("/show")]
+async fn show_users() -> impl Responder {
+    HttpResponse::Ok().body("List of users...")
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    let scope = web::scope("/users").service(show_users);
+    App::new().service(scope);
+    
     // Note: web::Data created _outside_ HttpServer::new closure
     let counter = web::Data::new(AppStateWithCounter {
         counter: Mutex::new(0),
