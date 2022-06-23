@@ -1,5 +1,6 @@
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder, guard};
 use std::sync::Mutex;
+mod config;
 
 // This struct represents state
 struct AppState {
@@ -50,6 +51,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         // move counter into the closure
         App::new()
+            .configure(config::config)
             .service(
                 web::scope("/app")
                     .route("/index.html", web::get().to(index))
@@ -61,6 +63,7 @@ async fn main() -> std::io::Result<()> {
             .service(hello)
             .service(
                 web::scope("/")
+                    .configure(config::scoped_config)
                     .guard(guard::Header("Host", "www.rust-lang.org"))
                     .route("", web::to(|| async { HttpResponse::Ok().body("www") }))
             )
